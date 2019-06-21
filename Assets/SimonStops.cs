@@ -28,6 +28,12 @@ public class SimonStops : MonoBehaviour
         "Green", "Blue", "Violet",
     };
 
+    string[] inputRainbow = new string[6]
+{
+        "r", "o", "y",
+        "g", "b", "v",
+};
+
     string[] alphabet = new string[26]
     { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
       "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
@@ -39,7 +45,7 @@ public class SimonStops : MonoBehaviour
   
          */
 
-
+    string[] outputSequence = new string[5];
 
     bool pressedAllowed = false;
 
@@ -72,6 +78,8 @@ public class SimonStops : MonoBehaviour
     string expectedColor;
     string rawOutput;
     string fullCycle;
+
+    string letterString;
 
     bool isSolved = false;
     bool tpActive = false;
@@ -122,6 +130,12 @@ public class SimonStops : MonoBehaviour
         //pickedName = UnityEngine.Random.Range(0, gryphNames.Count());
         //IDBox.GetComponentInChildren<TextMesh>().text = gryphNames[pickedName] + " (" + age + ")";
         pressedAllowed = true;
+        for (int stg = 0; stg < 5; stg++)
+        {
+            outputSequence[stg] = colors[Int16.Parse(rawOutput.Substring(stg, 1))];
+            //Debug.Log(outputSequence[stg]);
+        }
+        
     }
 
 
@@ -397,9 +411,9 @@ public class SimonStops : MonoBehaviour
                 break;
             case 2:
                 ciNumber = ciNumber + (Bomb.GetPortCount() * 2) + Bomb.GetBatteryHolderCount();
-                explainer = explainer + "Ports times 2 (" + (Bomb.GetPortCount() * 2) + ") plus battery holders (" + Bomb.GetBatteryHolderCount() + ") is " + ((Bomb.GetPortCount() * 2) + Bomb.GetBatteryHolderCount()) + ". Add them together to get ";
+                explainer = explainer + "Ports times 2 (" + (Bomb.GetPortCount() * 2) + ") plus battery holders (" + Bomb.GetBatteryHolderCount() + ") is " + ((Bomb.GetPortCount() * 2) + Bomb.GetBatteryHolderCount()) + ". Add them together to get " + ciNumber;
                 ciNumber = ciNumber % 10;
-                explainer = explainer + "That modulo 10 is " + ciNumber + ". The button that will require Control Input is press number " + expectedInputNumbers.Length + " which will be " + lastColor + ".";
+                explainer = explainer + ". That modulo 10 is " + ciNumber + ". The button that will require Control Input is press number " + expectedInputNumbers.Length + " which will be " + lastColor + ".";
                 Debug.LogFormat("[Simon Stops #{0}] Stage 2. {1} ", _moduleId, explainer);
                 switch (ciNumber)
                 {
@@ -475,9 +489,9 @@ public class SimonStops : MonoBehaviour
                 break;
             case 3:
                 ciNumber = ciNumber + 2 + (Bomb.GetOnIndicators().Count() * 3) + Bomb.GetOffIndicators().Count();
-                explainer = explainer + "2 (2), plus the indicator count with lit indicators counting as triple (" + ((Bomb.GetOnIndicators().Count() * 3) + Bomb.GetOffIndicators().Count()) + ") is " + (2 + (Bomb.GetOnIndicators().Count() * 3) + Bomb.GetOffIndicators().Count()) + ". Add them together to get ";
+                explainer = explainer + "2 (2), plus the indicator count with lit indicators counting as triple (" + ((Bomb.GetOnIndicators().Count() * 3) + Bomb.GetOffIndicators().Count()) + ") is " + (2 + (Bomb.GetOnIndicators().Count() * 3) + Bomb.GetOffIndicators().Count()) + ". Add them together to get " + ciNumber;
                 ciNumber = ciNumber % 10;
-                explainer = explainer + "That modulo 10 is " + ciNumber + ". The button that will require Control Input is press number " + expectedInputNumbers.Length + " which will be " + lastColor + ".";
+                explainer = explainer + ". That modulo 10 is " + ciNumber + ". The button that will require Control Input is press number " + expectedInputNumbers.Length + " which will be " + lastColor + ".";
                 Debug.LogFormat("[Simon Stops #{0}] Stage 3. {1} ", _moduleId, explainer);
                 switch (ciNumber)
                 {
@@ -671,6 +685,7 @@ public class SimonStops : MonoBehaviour
                     {
                         controlTimeLeft = controlTimeLimit;
                         currentLightCycle = 0;
+                        
                         for (int lo = 0; lo < 6; lo++)
                         {
                             lights[lo].enabled = false;
@@ -687,6 +702,8 @@ public class SimonStops : MonoBehaviour
                         //Debug.LogFormat("[Simon Stops #{0}] Now flashing: {1} ", _moduleId, fullCycle.Substring(currentLightCycle, 1));
                     }
                     break;
+                case 4:
+
                 default:
                     break;
             }
@@ -694,9 +711,9 @@ public class SimonStops : MonoBehaviour
 
         }
     }
-    /*
+
 #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"Use !{0} roygbv/r o y g b v/red orange yellow green blue violet to input a sequence. Your input will stop once a Control Input is needed. On Twitch Plays, the time limit to input the Control Input is 20 seconds.";
+    private readonly string TwitchHelpMessage = @"Use !{0} roygbv/r o y g b v to input a Normal Input sequence. Please do not use full color names. Your input will stop once a Control Input is needed; input the Control Input along with the rest of the sequence when prompted. On Twitch Plays, the time limit to input the Control Input is 20 seconds.";
     private readonly bool TwitchShouldCancelCommand = false;
 #pragma warning restore 414
 
@@ -704,88 +721,111 @@ public class SimonStops : MonoBehaviour
     {
         tpActive = true;
         var piecesRaw = command.ToLowerInvariant().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-        var pieces = new string[] { "bad", "bad", "bad", "bad", "bad"};
         controlTimeLimit = 20;
 
+        var tpStages = 0;
         string theError;
         theError = "";
         if (piecesRaw.Count() == 0)
         {
-            theError = "sendtochaterror No arguments! You need to use roygbv/r o y g b v/red orange yellow green blue violet to presss those buttons";
-            yield return theError;
-        }
-        else if (piecesRaw.Count() < stageNum + 2)
-        {
-            theError = "sendtochaterror Not enough arguments! Stage " + stageNum + " requires " + (stageNum + 2) + " inputs.";
+            theError = "sendtochaterror No arguments! You need to use roygbv/r o y g b v to presss those buttons";
             yield return theError;
         }
         else
         {
-            pieces[0] = piecesRaw[0];
-            if ((piecesRaw[1] == "blue" && piecesRaw[2] == "jay") || piecesRaw[1] == "bluejay")
-            {
-                pieces[1] = "bj";
-            }
-            else
-            {
-                pieces[1] = piecesRaw[1];
-            }
-            if ((piecesRaw[2] == "house" && piecesRaw[3] == "cat") || (piecesRaw[3] == "house" && piecesRaw[4] == "cat") || piecesRaw[2] == "housecat" || piecesRaw[3] == "housecat")
-            {
-                pieces[2] = "hc";
-            }
-            if ((piecesRaw[2] == "snow" && piecesRaw[3] == "leopard") || (piecesRaw[3] == "snow" && piecesRaw[4] == "leopard") || piecesRaw[2] == "snowleopard" || piecesRaw[3] == "snowleopard")
-            {
-                pieces[2] = "sl";
-            }
-            else
-            {
-                if (piecesRaw[1] == "blue")
+
+            //Debug.Log(piecesRaw[0]);
+            letterString = piecesRaw[0];
+            tpStages = piecesRaw[0].Length;
+            //Debug.Log(tpStages);
+
+                letterString = "";
+                for (int pn = 0; pn < piecesRaw.Count(); pn++)
                 {
 
-                    pieces[2] = piecesRaw[3];
+                    letterString = letterString + piecesRaw[pn];
                 }
-                else
-                {
-
-                    pieces[2] = piecesRaw[2];
-                }
-            }
-            pieces[3] = piecesRaw[piecesRaw.Count() - 1];
-            Debug.LogFormat("You entered >>> " + pieces[0] + " " + pieces[1] + " " + pieces[2] + " " + pieces[3] + " <<< which I hope makes sense");
-            if (pieces.Count() < 4)
+            tpStages = letterString.Length;
+        }
+        if (currentState == 2)
+        {
+            if (letterString.Length != stageNum + 3 - currentStagePresses)
             {
-                theError = "sendtochaterror Not enough arguments! You need to use submit/s, then a bird type, a cat type, and an accessory (submit bird cat accessory)";
+                theError = "sendtochaterror Not enough arguments! You require " + (stageNum + 2 - currentStagePresses) + " more inputs: the Control Input and the rest of your Normal Input sequence.";
                 yield return theError;
-            }
-            else if (pieces[0] != "submit" && pieces[0] != "s")
-            {
-                Debug.Log(piecesRaw[0] + " and " + pieces[0]);
-                theError = "sendtochaterror Invalid arguments! You need to use submit/s to submit.";
-                yield return theError;
-            }
-            else if (pieces[1] != "eagle" && pieces[1] != "falcon" && pieces[1] != "peacock" && pieces[1] != "cardinal" && pieces[1] != "bj" && pieces[1] != "crow")
-            {
-                theError = "sendtochaterror Invalid bird type! Valid types are eagle, falcon, peacock, cardinal, blue jay/bluejay, crow.";
-                yield return theError;
-            }
-            else if (pieces[2] != "tiger" && pieces[2] != "lion" && pieces[2] != "cheetah" && pieces[2] != "panther" && pieces[2] != "sl" && pieces[2] != "hc")
-            {
-                theError = "sendtochaterror Invalid cat type! Valid types are tiger, lion, cheetah, panther, snow leopard/snowleopard, housecat/house cat.";
-                yield return theError;
-            }
-            else if (pieces[3] != "watch" && pieces[3] != "visor" && pieces[3] != "shoes" && pieces[3] != "scarf" && pieces[3] != "headphones" && pieces[3] != "shades")
-            {
-                theError = "sendtochaterror Invalid accessory type! Valid types are watch, visor, shoes, scarf, headphones, shades.";
-                yield return theError;
-            }
-            else
-            {
-                
             }
         }
-     }
-     */
+        else
+        {
+            if (letterString.Length < stageNum + 2)
+            {
+                theError = "sendtochaterror Not enough arguments! Stage " + stageNum + " requires " + (stageNum + 2) + " inputs (but you'll be stopped when prompted for the Control Input).";
+                yield return theError;
+            }
+        }
+        ///////////////////
+        ///// check if all stages are ok here
+        ///////////////////
+        for (int tbn = 0; tbn < letterString.Length; tbn++)
+        {
+            if (letterString.Substring(tbn, 1) != "r" && letterString.Substring(tbn, 1) != "o" && letterString.Substring(tbn, 1) != "y" &&
+                letterString.Substring(tbn, 1) != "g" && letterString.Substring(tbn, 1) != "b" && letterString.Substring(tbn, 1) != "v" )
+            {
+                theError = "sendtochaterror Invalid argument! " + letterString.Substring(tbn, 1) + " is not a valid initial letter of a color. Please use R, O, Y, G, B, or V.";
+                tbn = letterString.Length;
+                yield return theError;
+            }
+        }
+        while (tpStages > 0)
+        {
+            var awaitingControl = false;
+            if (currentState == 2)
+            {
+                awaitingControl = true;
+            }
+            yield return null;
+            yield return new WaitForSeconds(.175f);
+            var pickNum = 0;
+            while (pickNum < 6 && inputRainbow[pickNum] != letterString.Substring(letterString.Length - tpStages, 1))
+            {
+                pickNum++;
+            }
+            if (pickNum == 6)
+            {
+                theError = "sendtochaterror Invalid arguments! " + letterString.Substring(letterString.Length - tpStages, 1) + " is not a valid color or initial letter of a color even though we just tested this.";
+                yield return theError;
+            }
+            var buttonPicked = pickNum;
+            yield return null;
+            //Debug.Log("PRessed " + buttonPicked + " which is " + letterString.Substring(letterString.Length - tpStages, 1));
+            button[buttonPicked].OnInteract();
+            tpStages--;
+            if (!awaitingControl && currentState == 2)
+            {
+                tpStages = 0;
+                yield return "sendtochat It's time for Control Input! So far this stage you've pressed " + currentStagePresses + " button(s).";
+            }
+        }
+    }
+	
+	void TwitchHandleForcedSolve()
+	{
+		Debug.LogFormat("[Simon Stops #{0}] Twitch Plays demands an auto-solve, skipping all stages.", _moduleId);
+        string[] tpFS = new string[7] { "t", "p", "s", "o", "l", "v", "e" };
+        outputSequence = tpFS;	//Make sure Souvenir doesn't ask about an auto-solved Simon Stops.			
+		stageNum = 4;
+		currentStagePresses = 0;
+		for (int lo = 0; lo < 6; lo++)
+		{
+			lights[lo].enabled = false;
+		}
+		currentState = 3;
+		pressedAllowed = false;
+		isSolved = true;
+		Module.HandlePass();
+	}
+	
+
     void pressButton(int b)
     {
         hasFocus = true;
@@ -812,6 +852,10 @@ public class SimonStops : MonoBehaviour
                     if (stageNum >= 4)
                     {
                         Debug.LogFormat("[Simon Stops #{0}] All stages clear, module disarmed!", _moduleId);
+                        for (int lo = 0; lo < 6; lo++)
+                        {
+                            lights[lo].enabled = false;
+                        }
                         currentState = 3;
                         pressedAllowed = false;
                         isSolved = true;
