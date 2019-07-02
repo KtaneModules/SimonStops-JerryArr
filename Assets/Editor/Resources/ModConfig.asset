@@ -13,13 +13,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: simonStops
   title: Simon Stops
-  description: 'Simon Stops v1.11
+  description: 'Simon Stops v1.12
 
     If you don''t hear something, think quick, or you might be hearing something real
     loud real soon...
 
 
     Manual available here: https://ktane.timwi.de/HTML/Simon%20Stops.html'
-  version: 1.11
+  version: 1.12
   outputFolder: build
   previewImage: {fileID: 2800000, guid: 1eed1aff1b56dd547acd6525fac4a863, type: 3}

@@ -773,10 +773,11 @@ public class SimonStops : MonoBehaviour
             {
                 theError = "sendtochaterror Invalid argument! " + letterString.Substring(tbn, 1) + " is not a valid initial letter of a color. Please use R, O, Y, G, B, or V.";
                 tbn = letterString.Length;
+				tpStages = 0;
                 yield return theError;
             }
         }
-        while (tpStages > 0)
+        while (tpStages > 0 && theError == "")
         {
             var awaitingControl = false;
             if (currentState == 2)
