@@ -713,7 +713,7 @@ public class SimonStops : MonoBehaviour
     }
 
 #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"Use !{0} roygbv/r o y g b v to input a Normal Input sequence. Please do not use full color names. Your input will stop once a Control Input is needed; input the Control Input along with the rest of the sequence when prompted. On Twitch Plays, the time limit to input the Control Input is 20 seconds.";
+    private readonly string TwitchHelpMessage = @"Use !{0} roygbv/r o y g b v to input a Normal Input sequence. Please do not use full color names, and make sure the command consists only of the colors' first letters. Your input will stop once a Control Input is needed; input the Control Input along with the rest of the sequence when prompted. On Twitch Plays, the time limit to input the Control Input is 20 seconds.";
     private readonly bool TwitchShouldCancelCommand = false;
 #pragma warning restore 414
 
@@ -751,7 +751,7 @@ public class SimonStops : MonoBehaviour
         {
             if (letterString.Length != stageNum + 3 - currentStagePresses)
             {
-                theError = "sendtochaterror Not enough arguments! You require " + (stageNum + 2 - currentStagePresses) + " more inputs: the Control Input and the rest of your Normal Input sequence.";
+                theError = "sendtochaterror Not enough arguments! You require " + (stageNum + 3 - currentStagePresses) + " more input(s): the Control Input and the rest of your Normal Input sequence.";
                 yield return theError;
             }
         }
@@ -772,9 +772,14 @@ public class SimonStops : MonoBehaviour
                 letterString.Substring(tbn, 1) != "g" && letterString.Substring(tbn, 1) != "b" && letterString.Substring(tbn, 1) != "v" )
             {
                 theError = "sendtochaterror Invalid argument! " + letterString.Substring(tbn, 1) + " is not a valid initial letter of a color. Please use R, O, Y, G, B, or V.";
+                if (tbn == 0)
+                {
+                    theError = theError + " Remember: Only use initial letters of the colors you're inputting; commands like 'press' aren't used.";
+                }
                 tbn = letterString.Length;
 				tpStages = 0;
                 yield return theError;
+                break;
             }
         }
         while (tpStages > 0 && theError == "")
