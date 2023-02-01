@@ -96,7 +96,7 @@ public class SimonStops : MonoBehaviour
     {
         delegationZone();
         float scalar = transform.lossyScale.x;
-        for (int sbn = 0; sbn < 5; sbn++)
+        for (int sbn = 0; sbn < 6; sbn++)
         {
 
             lights[sbn].range *= scalar;
@@ -747,22 +747,6 @@ public class SimonStops : MonoBehaviour
                 }
             tpStages = letterString.Length;
         }
-        if (currentState == 2)
-        {
-            if (letterString.Length != stageNum + 3 - currentStagePresses)
-            {
-                theError = "sendtochaterror Not enough arguments! You require " + (stageNum + 3 - currentStagePresses) + " more input(s): the Control Input and the rest of your Normal Input sequence.";
-                yield return theError;
-            }
-        }
-        else
-        {
-            if (letterString.Length < stageNum + 2)
-            {
-                theError = "sendtochaterror Not enough arguments! Stage " + stageNum + " requires " + (stageNum + 2) + " inputs (but you'll be stopped when prompted for the Control Input).";
-                yield return theError;
-            }
-        }
         ///////////////////
         ///// check if all stages are ok here
         ///////////////////
@@ -781,7 +765,24 @@ public class SimonStops : MonoBehaviour
                 yield return theError;
                 break;
             }
+        }		
+        if (currentState == 2)
+        {
+            if (letterString.Length != stageNum + 3 - currentStagePresses)
+            {
+                theError = "sendtochaterror Not enough arguments! You require " + (stageNum + 3 - currentStagePresses) + " more input(s): the Control Input and the rest of your Normal Input sequence.";
+                yield return theError;
+            }
         }
+        else
+        {
+            if (letterString.Length < stageNum + 2)
+            {
+                theError = "sendtochaterror Not enough arguments! Stage " + stageNum + " requires " + (stageNum + 2) + " inputs (but you'll be stopped when prompted for the Control Input).";
+                yield return theError;
+            }
+        }
+
         while (tpStages > 0 && theError == "")
         {
             var awaitingControl = false;
@@ -800,6 +801,7 @@ public class SimonStops : MonoBehaviour
             {
                 theError = "sendtochaterror Invalid arguments! " + letterString.Substring(letterString.Length - tpStages, 1) + " is not a valid color or initial letter of a color even though we just tested this.";
                 yield return theError;
+                break;
             }
             var buttonPicked = pickNum;
             yield return null;
@@ -809,7 +811,9 @@ public class SimonStops : MonoBehaviour
             if (!awaitingControl && currentState == 2)
             {
                 tpStages = 0;
+				yield return "strike";
                 yield return "sendtochat It's time for Control Input! So far this stage you've pressed " + currentStagePresses + " button(s).";
+                break;
             }
         }
     }
